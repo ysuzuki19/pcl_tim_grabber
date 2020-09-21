@@ -1,0 +1,9 @@
+proj
+project
+.DS_Store
+*~
+*.swp
+*.swo
+dev/
+build/
+result.txt
