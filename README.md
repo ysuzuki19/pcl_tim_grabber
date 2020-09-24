@@ -2,4 +2,4 @@
 grabber class for SICK sensor named Tim.
 
 # demo
-<p align="center"><img src="tim_grabber_demo.gif" height="100"></p>
+<p align="center"><img src="tim_grabber_demo.gif"></p>
