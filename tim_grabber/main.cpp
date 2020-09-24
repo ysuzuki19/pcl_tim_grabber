@@ -3,7 +3,6 @@
 #include <pcl/pcl_macros.h>
 
 #include <pcl/io/grabber.h>
-#include <pcl/io/impl/synchronized_queue.hpp>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <boost/asio.hpp>
@@ -49,7 +48,7 @@ namespace pcl
 			static float *cos_lookup_table_;
 			static float *sin_lookup_table_;
 			constexpr static boost::array<char,128> sick_tim_scan_query = {"\x02sRN LMDscandata 1\x03\0"};
-			boost::array<char, 4000> received_packet;
+			boost::array<char, 6000> received_packet;
 			//tim_telegram_manager stm_;
 			boost::asio::ip::tcp::endpoint tcp_endpoint_;
 			boost::asio::io_context tim_io_context_;
@@ -62,9 +61,6 @@ namespace pcl
 
 			void
 			initialize ();
-
-			bool
-			invalidPacket (std::string const& packet_str) const;
 
 			void
 			receiveTimPacket ();
@@ -147,24 +143,27 @@ pcl::TimGrabber::getFramesPerSecond () const
 	return (0.0f);
 }
 
-bool
-pcl::TimGrabber::invalidPacket (std::string const& packet_str) const
-{
-	return packet_str[0] != ''; // if front char is not '' , packet was broken.
-}
-
 void
 pcl::TimGrabber::receiveTimPacket ()
 {
-	if (!tim_socket_.is_open ())
-		return;
-	do {
-		received_packet.assign (0);
+	static unsigned short wait_time_milliseconds = 0;
+
+	while (tim_socket_.is_open ()) {
+
 		tim_socket_.send (boost::asio::buffer (sick_tim_scan_query));
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_milliseconds));
+
 		std::size_t length = tim_socket_.receive (boost::asio::buffer (received_packet));
-	} while (invalidPacket (received_packet.data ()) && !tim_socket_.is_open ()); // if front char is not '' , packet was broken.
-	//} while (received_packet.data()[0] != ''); // if front char is not '' , packet was broken.
-	//} while (received_packet.data()[0] != ''); // if front char is not '' , packet was broken.
+
+		if (received_packet.data()[length-1] == '\03') {
+			return;
+		} else {
+			wait_time_milliseconds++;
+			while (received_packet.data()[length-1] != '\03')
+				length = tim_socket_.receive (boost::asio::buffer (received_packet));
+		}
+	}
 }
 
 void
@@ -174,6 +173,7 @@ pcl::TimGrabber::processTimPacket ()
 	std::string str;
 	for (int i=0; i<26; ++i)
 		ss >> str;
+
 	std::size_t amount_of_data = std::stoi (str, nullptr, 16);
 
 	point_cloud_xyz_ptr_->resize (amount_of_data);
@@ -181,7 +181,7 @@ pcl::TimGrabber::processTimPacket ()
 	std::vector<float> distances (amount_of_data);
 	for (auto& distance : distances) {
 		ss >> str;
-		if (!str.empty ()) distance = std::stoi (str, nullptr, 16) / 1000.0;
+		distance = std::stoi (str, nullptr, 16) / 1000.0;
 	}
 
 	toPointClouds (distances);
