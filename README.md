@@ -1,4 +1,4 @@
-# pcl_sick_grabber
+# pcl_tim_grabber
 grabber class for SICK sensor named Tim.
 
 # demo
