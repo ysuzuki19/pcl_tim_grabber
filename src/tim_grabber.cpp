@@ -3,6 +3,7 @@
  *
  *  Point Cloud Library (PCL) - www.pointclouds.org
  *  Copyright (c) 2014-, Open Perception, Inc.
+ *  Copyright (c) 2020, ysuzuki19
  *
  *  All rights reserved.
  *
@@ -37,7 +38,7 @@
 
 
 #include "../include/pcl/io/tim_grabber.h"
-//TODO: change "xxx.h" to <xxx.h> when implement PCL
+//TODO: change "xxx.h" to <xxx.h> when implement PCL and delete this line
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 pcl::TimGrabber::TimGrabber (const boost::asio::ip::address& ipAddress,
