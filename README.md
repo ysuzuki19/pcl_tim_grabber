@@ -3,3 +3,15 @@ grabber class for SICK sensor named Tim.
 
 # demo
 <p align="center"><img src="tim_grabber_demo.gif"></p>
+
+# How to run demo
+
+```
+$ apt install libpcl-dev
+$ git clone https://github.com/ysuzuki19/pcl_sick_grabber
+$ cd pcl_sick_grabber/example
+$ mkdir build & cd build
+$ cmake ..
+$ make
+$ ./project
+```
