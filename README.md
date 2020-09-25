@@ -6,7 +6,9 @@ grabber class for SICK sensor named Tim.
 
 # How to run demo
 You can run this example on Linux.
+
 Connect Tim5xx anyway.
+
 Then run following commands.
 
 ```
