@@ -21,3 +21,5 @@ $ cmake ..
 $ make
 $ ./project
 ```
+# NOTE
+Keep in mind that when connecting Tim5XX to your PC, set your PC's IP address to `192.168.0.X`(same LAN group)
