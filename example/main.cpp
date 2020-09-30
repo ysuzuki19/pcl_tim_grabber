@@ -1,3 +1,4 @@
+//#include <pcl/io/tim_grabber.h>
 #include "../include/pcl/io/tim_grabber.h"
 #include "../src/tim_grabber.cpp"
 
@@ -43,9 +44,9 @@ int main( int argc, char *argv[] )
 	viewer->initCameraParameters();
 	viewer->setCameraPosition(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0);
 
-	pcl::visualization::PointCloudColorHandler<PointType>::Ptr handler;
-	boost::shared_ptr<pcl::visualization::PointCloudColorHandlerCustom<PointType>> color_handler( new pcl::visualization::PointCloudColorHandlerCustom<PointType>( 255.0, 255.0, 255.0 ) );
-	handler = color_handler;
+	//pcl::visualization::PointCloudColorHandler<PointType>::Ptr handler;
+	//boost::shared_ptr<pcl::visualization::PointCloudColorHandlerCustom<PointType>> color_handler( new pcl::visualization::PointCloudColorHandlerCustom<PointType>( 255.0, 255.0, 255.0 ) );
+	//handler = color_handler;
 
 	boost::mutex mutex;
 	std::function<void( const pcl::PointCloud<PointType>::ConstPtr& )> callback_func =
@@ -74,9 +75,11 @@ int main( int argc, char *argv[] )
 
 		boost::mutex::scoped_try_lock lock( mutex );
 		if( lock.owns_lock() && cloud ){
-			handler->setInputCloud( cloud );
-			if( !viewer->updatePointCloud( cloud, *handler, "cloud" ) ){
-				viewer->addPointCloud( cloud, *handler, "cloud" );
+			//handler->setInputCloud( cloud );
+			//if( !viewer->updatePointCloud( cloud, *handler, "cloud" ) ){
+				//viewer->addPointCloud( cloud, *handler, "cloud" );
+			if( !viewer->updatePointCloud( cloud, "cloud" ) ){
+				viewer->addPointCloud( cloud, "cloud" );
 			}
 		}
 	}
