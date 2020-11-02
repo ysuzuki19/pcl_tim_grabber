@@ -8,7 +8,7 @@
  *  All rights reserved
  */
 
-#include <pcl/io/tim_grabber.h>
+#include "../include/pcl/io/tim_grabber.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 pcl::TimGrabber::TimGrabber () :
