@@ -11,6 +11,13 @@
 #include <pcl/io/tim_grabber.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+pcl::TimGrabber::TimGrabber () :
+    tim_socket_ (tim_io_service_)
+{
+  initialize ();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 pcl::TimGrabber::TimGrabber (const boost::asio::ip::address& ipAddress,
                              const std::uint16_t port) :
     tcp_endpoint_ (ipAddress, port),
@@ -107,79 +114,51 @@ pcl::TimGrabber::receiveTimPacket ()
 }
 
 void
-pcl::TimGrabber::parsePacketHeader (std::istringstream& ss) {
-  //// note: Protcol named CoLaA (used by SICK) has some information.
-  ////       In this Grabber, only the amount_of_data is used, so other information is truncated.
-  ////       Details of the protocol can be found at the following URL.
+pcl::TimGrabber::parsePacketHeader (std::string const& header) {
+  //// note:  Please following part, if you want to use other information in the header.
+  //std::size_t pos = header.find (' ');
+  //for (int i=0; i<24; ++i)
+    //pos = header.find (' ', pos+1);
 
-  //// pp.87~89 (table)
-
-  //// https://cdn.sickcn.com/media/docs/7/27/927/technical_information_telegram_listing_ranging_sensors_lms1xx_lms5xx_tim2xx_tim5xx_tim7xx_lms1000_mrs1000_mrs6000_nav310_ld_oem15xx_ld_lrs36xx_lms4000_en_im0045927.pdf
-
-
-  //// By this PDF, the header contains the following information in order
-
-  /////////////////////////////////////////////////////
-  //// command type, command
-  //// version number
-  //// device number
-  //// serial number (2 value)
-  //// device status
-  //// Telegram counter
-  //// Scan counter
-  //// Time since start up
-  //// Time of transmission
-  //// Status of digital inputs (2 value)
-  //// Status of digital outputs (2 value)
-  //// Reserved
-  //// scan frequency
-  //// measurement frequency
-  //// Amount of encoder
-  //// Amount of 16 bit channels
-  //// Content
-  //// Scale factor according to IEEE754
-  //// Scale factor offset according to IEEE754
-  //// Start angle
-  //// Size of single angular step
-  //// Amount of data
-  /////////////////////////////////////////////////////
-
-  std::string str;
-  for (int i=0; i<26; ++i)
-    ss >> str;
-  // last value is Amount of data
-
-  amount_of_data_ = std::stoi (str, nullptr, 16);
+  std::size_t pos = header.rfind(' ');
+  amount_of_data_ = std::stoi (header.substr (pos+1), nullptr, 16);
 }
 
 void
-pcl::TimGrabber::parsePacketBody (std::istringstream& ss) {
-  std::string str;
+pcl::TimGrabber::parsePacketBody (std::string const& body) {
+  std::istringstream ss (body);
+  ss.setf(std::ios::hex, std::ios::basefield);
+  int d;
   for (auto& distance : distances_) {
-    ss >> str;
-    distance = std::stoi (str, nullptr, 16) / 1000.0;
+    ss >> d;
+    distance = d / 1000.0;
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void
-pcl::TimGrabber::processTimPacket ()
+pcl::TimGrabber::processTimPacket (std::string const& packet)
 {
-  std::istringstream ss (received_packet_.data ());
+  std::size_t header_body_splitter = packet.find (' ');
+  for (int i=0; i<25; ++i)
+    header_body_splitter = packet.find (' ', header_body_splitter + 1);
 
-  parsePacketHeader (ss);
+  //// packet contains header and body.
+  //// header has 26 spaces, the rest is body
+  std::string header (packet.substr (0, header_body_splitter));
+  std::string body   (packet.substr (header_body_splitter + 1));
 
-  point_cloud_xyz_ptr_->resize (amount_of_data_);
+  parsePacketHeader (header);
+
   distances_.resize (amount_of_data_);
 
-  parsePacketBody (ss);
+  parsePacketBody (body);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::TimGrabber::toPointClouds () {
   point_cloud_xyz_ptr_->resize (distances_.size ());
-
   for (std::size_t i=0; i<distances_.size (); ++i) {
     point_cloud_xyz_ptr_->points[i].x = distances_[i] * cos_dynamic_lookup_table_[i];
     point_cloud_xyz_ptr_->points[i].y = distances_[i] * sin_dynamic_lookup_table_[i];
@@ -249,7 +228,7 @@ pcl::TimGrabber::processGrabbing ()
     frequency_mutex_.unlock ();
 
     receiveTimPacket ();
-    processTimPacket ();
+    processTimPacket (received_packet_.data ());
 
     updateLookupTables ();
     toPointClouds ();

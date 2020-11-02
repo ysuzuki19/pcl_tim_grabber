@@ -25,6 +25,49 @@
 namespace pcl
 {
 
+//// note: Protcol named CoLaA (used by SICK) has some information.
+////       In this Grabber, only the amount_of_data is used, so other information is truncated.
+////       Details of the protocol can be found at the following URL.
+
+//// pp.87~89 (table)
+
+//// https://cdn.sickcn.com/media/docs/7/27/927/technical_information_telegram_listing_ranging_sensors_lms1xx_lms5xx_tim2xx_tim5xx_tim7xx_lms1000_mrs1000_mrs6000_nav310_ld_oem15xx_ld_lrs36xx_lms4000_en_im0045927.pdf
+
+
+//// By this PDF, the header contains the following information in order
+
+/////////////////////////////////////////////////////
+//// command type
+//// command
+//// version number
+//// device number
+//// serial number (2 value)
+//// device status
+//// Telegram counter
+//// Scan counter
+//// Time since start up
+//// Time of transmission
+//// Status of digital inputs (2 value)
+//// Status of digital outputs (2 value)
+//// Reserved
+//// scan frequency
+//// measurement frequency
+//// Amount of encoder
+//// Amount of 16 bit channels
+//// Content
+//// Scale factor according to IEEE754
+//// Scale factor offset according to IEEE754
+//// Start angle
+//// Size of single angular step
+//// Amount of data
+//// distance_1
+//// distance_2
+//// distance_3
+//// ...
+//// distance_n
+/////////////////////////////////////////////////////
+
+
 class PCL_EXPORTS TimGrabber : public Grabber
 {
   public:
@@ -53,6 +96,21 @@ class PCL_EXPORTS TimGrabber : public Grabber
     void
     publishSignal ();
 
+    //// parse received packet
+    //// used by GTEST
+    void
+    processTimPacket (std::string const& packet);
+
+    //// check size of lookup tables
+    //// rebuild if lookup tables have different size
+    void
+    updateLookupTables ();
+
+    //// convert std::vector (distance) to pcl::PointCloud
+    //// used by GTEST
+    void
+    toPointClouds ();
+
   private:
     constexpr static float angle_start_ = - 1.0 * M_PI / 4.0;
     constexpr static float angle_range_ = 2.0 * M_PI * 3.0 / 4.0;
@@ -65,7 +123,7 @@ class PCL_EXPORTS TimGrabber : public Grabber
     std::array<char, 4000> received_packet_;
     std::size_t length_;
 
-    std::size_t amount_of_data_;
+    std::size_t amount_of_data_ = 811;
     std::vector<float> distances_;
 
     boost::asio::ip::tcp::endpoint tcp_endpoint_;
@@ -89,11 +147,6 @@ class PCL_EXPORTS TimGrabber : public Grabber
     void
     buildLookupTables ();
 
-    //// check size of lookup tables
-    //// rebuild if lookup tables have different size
-    void
-    updateLookupTables ();
-
     //// check received packet is valid
     bool
     isValidPacket () const;
@@ -103,17 +156,9 @@ class PCL_EXPORTS TimGrabber : public Grabber
     receiveTimPacket ();
 
     void
-    parsePacketHeader (std::istringstream& ss);
+    parsePacketHeader (std::string const& header);
     void
-    parsePacketBody (std::istringstream& ss);
-
-    //// parse received packet
-    void
-    processTimPacket ();
-
-    //// convert std::vector (distance) to pcl::PointCloud
-    void
-    toPointClouds ();
+    parsePacketBody (std::string const& body);
 
     void
     processGrabbing ();
