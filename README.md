@@ -1,25 +1,38 @@
 # pcl_tim_grabber
+
+```
+The grabber implemented this repository was merged on pcl.
+
+This repository is only example of running grabber and visualize data.
+```
+
 grabber class for SICK sensor named Tim.
 
 # demo
-<p align="center"><img src="tim_grabber_demo.gif"></p>
 
-# How to run demo
-You can run this example on Linux.
+![tim_grabber_demo](/tim_grabber_demo.gif)
 
-Connect Tim5xx anyway.
+# Dependencies
 
-Then run following commands.
+Please build and install with master branch of [pcl](https://github.com/PointCloudLibrary/pcl).
+
+## Linux
+
+[here](https://pcl.readthedocs.io/projects/tutorials/en/latest/compiling_pcl_posix.html#experimental)
+
+If you run with other platform, please go to the page from [here](https://github.com/PointCloudLibrary/pcl#compiling)
+
+# Connect Tim5xx
+
+Connect Tim5xx and set ip `192.168.0.XXX` (same LAN group)
+
+# Run example
 
 ```
-$ apt install libpcl-dev
 $ git clone https://github.com/ysuzuki19/pcl_sick_grabber
-$ cd pcl_sick_grabber/example
-$ mkdir build
+$ makdir build
 $ cd build
 $ cmake ..
 $ make
-$ ./project
+$ ./visualize_tim
 ```
-# NOTE
-Keep in mind that when connecting Tim5XX to your PC, set your PC's IP address to `192.168.0.X`(same LAN group, X is not 1)

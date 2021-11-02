@@ -1,14 +1,13 @@
-#include <pcl/io/tim_grabber.h>
-
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/io/tim_grabber.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <boost/thread.hpp>
-
+#include <boost/lexical_cast.hpp>
 
 typedef pcl::PointXYZ PointType;
 
