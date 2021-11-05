@@ -29,7 +29,7 @@ Connect Tim5xx and set ip `192.168.0.XXX` (same LAN group)
 # Run example
 
 ```
-$ git clone https://github.com/ysuzuki19/pcl_sick_grabber
+$ git clone https://github.com/ysuzuki19/pcl_tim_grabber
 $ makdir build
 $ cd build
 $ cmake ..
